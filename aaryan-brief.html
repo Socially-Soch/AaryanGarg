@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quick form · Socially Soch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:        #2F1A0E;
+  --bg-card:   #3F2418;
+  --bg-card-2: #4A2C1E;
+  --border:    rgba(187,148,87,0.26);
+  --tan:       #BB9457;
+  --text:      #F5E5C4;
+  --text-soft: rgba(245,229,196,0.72);
+  --text-mute: rgba(245,229,196,0.45);
+  --burgundy:  #6F1D1B;
+  --burgundy-2:#8A2826;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{
+  max-width:640px;
+  margin:0 auto;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  padding:24px 24px 32px;
+}
+
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0 32px;
+}
+.wordmark{font-weight:600;font-size:14px;letter-spacing:0.04em;color:var(--text)}
+.step{font-size:12px;letter-spacing:0.06em;color:var(--text-mute)}
+
+.stage{flex:1;display:flex;flex-direction:column}
+
+.section-title{
+  font-size:22px;font-weight:600;margin-bottom:28px;color:var(--text);
+}
+
+.question{margin-bottom:28px}
+.q-label{
+  display:block;font-size:15px;font-weight:500;margin-bottom:6px;color:var(--text);
+}
+.q-help{
+  font-size:13px;color:var(--text-soft);margin-bottom:12px;line-height:1.55;
+}
+
+.opts{display:flex;flex-direction:column;gap:8px}
+
+.opt{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 14px;
+  cursor:pointer;
+  display:flex;align-items:flex-start;gap:12px;
+  transition:border-color 0.15s, background 0.15s;
+}
+.opt:hover{border-color:var(--tan);background:var(--bg-card-2)}
+.opt.selected{border-color:var(--tan);background:rgba(187,148,87,0.10)}
+
+.opt .mark{
+  width:16px;height:16px;border-radius:50%;
+  border:1px solid var(--border);flex-shrink:0;margin-top:2px;
+  transition:all 0.15s;
+}
+.opt.selected .mark{
+  border-color:var(--tan);background:var(--tan);
+  box-shadow:inset 0 0 0 3px var(--bg-card);
+}
+
+.opt .text{font-size:14px;color:var(--text);line-height:1.4;flex:1}
+.opt .text .sub{
+  display:block;font-size:12px;color:var(--text-mute);margin-top:3px;
+}
+
+.text-input,
+.other-input{
+  width:100%;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 14px;
+  color:var(--text);
+  font-family:inherit;font-size:14px;
+  margin-top:8px;
+}
+.text-input:focus,
+.other-input:focus{outline:none;border-color:var(--tan)}
+.text-input::placeholder,
+.other-input::placeholder{color:var(--text-mute)}
+.other-input.hidden{display:none}
+
+.navrow{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:24px;margin-top:24px;border-top:1px solid var(--border);
+}
+.back{
+  background:none;border:none;color:var(--text-mute);
+  font-family:inherit;font-size:14px;cursor:pointer;padding:6px 0;
+}
+.back:hover{color:var(--text)}
+.next{
+  background:var(--burgundy);color:var(--text);
+  border:none;border-radius:6px;padding:10px 24px;
+  font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;
+  transition:background 0.15s;
+}
+.next:hover{background:var(--burgundy-2)}
+.next:disabled{
+  background:var(--bg-card);color:var(--text-mute);cursor:not-allowed;
+}
+
+.center{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+}
+.center h1{font-size:26px;font-weight:600;margin-bottom:10px}
+.center p{color:var(--text-soft);margin-bottom:20px}
+.center .cta{
+  align-self:flex-start;
+  background:var(--burgundy);color:var(--text);
+  border:none;border-radius:6px;padding:12px 28px;
+  font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;
+}
+.center .cta:hover{background:var(--burgundy-2)}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;color:var(--text-soft);margin-bottom:6px}
+.field input{
+  width:100%;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:10px 12px;
+  color:var(--text);
+  font-family:inherit;font-size:14px;
+}
+.field input:focus{outline:none;border-color:var(--tan)}
+
+@media (max-width:560px){
+  .section-title{font-size:20px}
+  .center h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="wordmark">Socially Soch</div>
+    <div class="step" id="stepCounter"></div>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <div class="navrow" id="navrow" style="display:none">
+    <button class="back" id="backBtn" type="button">Back</button>
+    <button class="next" id="nextBtn" type="button">Continue</button>
+  </div>
+
+</div>
+
+<script>
+const CONFIG = {
+  clientName: "Aaryan",
+  appsScriptUrl: "PASTE_YOUR_APPS_SCRIPT_URL_HERE"
+};
+
+const OTHER = "__other__";
+
+const SCREENS = [
+  { type: "intro" },
+
+  {
+    type: "section",
+    title: "The business",
+    questions: [
+      {
+        key: "model",
+        label: "What kind of business are you setting up?",
+        help: "There is no single right answer here, this is the first thing we will help you figure out.",
+        type: "single",
+        allowOther: true,
+        options: [
+          { v: "multibrand",  l: "Multi-brand retail showroom", sub: "Curate other brands under one roof, like Address Home or Pure Concept Home" },
+          { v: "distributor", l: "Distributor for international brands", sub: "Sell B2B to architects and other retailers, like Sources Unlimited" },
+          { v: "ownbrand",    l: "Your own brand store", sub: "Your products under your own brand, in your own space" },
+          { v: "hybrid",      l: "Own brand plus distribute select brands", sub: "Private label and curated mix, the Address Home model" },
+          { v: "figuring",    l: "Still figuring this out", sub: "Want to discuss before locking it in" }
+        ]
+      },
+      {
+        key: "stage",
+        label: "Where are you in the journey right now?",
+        type: "single",
+        allowOther: true,
+        options: [
+          { v: "exploring", l: "Just exploring, no commitments yet" },
+          { v: "concept",   l: "Concept locked, planning the launch" },
+          { v: "deals",     l: "Talking to brands or suppliers, deals in motion" },
+          { v: "tieups",    l: "Brand or supply tie ups locked, planning the store" },
+          { v: "space",     l: "Store space identified, ready to fit out" }
+        ]
+      },
+      {
+        key: "categories",
+        label: "Which categories will the store carry?",
+        help: "Pick everything you are seriously considering. We will help you sequence them in the launch.",
+        type: "multi",
+        allowOther: true,
+        options: [
+          { v: "bath",      l: "Bath fittings", sub: "Faucets, showers, sanitaryware" },
+          { v: "wardrobes", l: "Wardrobes and storage" },
+          { v: "kitchen",   l: "Kitchen and appliances" },
+          { v: "furniture", l: "Furniture", sub: "Living, dining, bedroom" },
+          { v: "lighting",  l: "Lighting" },
+          { v: "decor",     l: "Home decor and accessories" },
+          { v: "hardware",  l: "Hardware and finishes", sub: "Handles, knobs, surface finishes" },
+          { v: "all",       l: "All of the above, a full lifestyle destination" }
+        ]
+      }
+    ]
+  },
+
+  {
+    type: "section",
+    title: "Customer and inspiration",
+    questions: [
+      {
+        key: "customer",
+        label: "Who is the main customer?",
+        type: "single",
+        allowOther: true,
+        options: [
+          { v: "architects",  l: "Architects and interior designers", sub: "They specify your products for HNI projects" },
+          { v: "homeowners",  l: "HNI homeowners directly", sub: "Walk ins and referrals" },
+          { v: "builders",    l: "Builders and developers", sub: "Luxury residential and hotel projects" },
+          { v: "hospitality", l: "Boutique hotels and hospitality" },
+          { v: "mix",         l: "A mix of all the above" }
+        ]
+      },
+      {
+        key: "reference",
+        label: "Name a brand you admire or want to position yours like",
+        help: "Could be Indian or international. Could be a direct competitor or a brand you respect. Take a moment to think, or quickly search a few names before you type. Some examples to spark thought: Address Home, Pure Concept Home, Beyond Designs, FormeStore, Sources Unlimited, Restoration Hardware, The Conran Shop, B&B Italia, Roche Bobois. Or something else entirely.",
+        type: "text",
+        placeholder: "Type one or two brand names"
+      },
+      {
+        key: "design",
+        label: "What design language do you lean towards?",
+        type: "single",
+        allowOther: true,
+        options: [
+          { v: "minimal",  l: "Modern minimal", sub: "Clean lines, neutral palette, metal finishes" },
+          { v: "european", l: "Classic European luxury", sub: "Brass, marble, ornate detailing" },
+          { v: "italian",  l: "Italian contemporary", sub: "Sculptural, sleek, refined" },
+          { v: "indian",   l: "Indian craft plus modern", sub: "Local materials and forms with a contemporary feel" },
+          { v: "japanese", l: "Japanese wellness", sub: "Restraint, water, ritual, wabi sabi" },
+          { v: "eclectic", l: "Eclectic mix", sub: "Curated tension across styles" },
+          { v: "tech",     l: "Tech forward", sub: "Smart home, sensor based, futuristic" }
+        ]
+      }
+    ]
+  },
+
+  {
+    type: "section",
+    title: "The store and launch",
+    questions: [
+      {
+        key: "storeExperience",
+        label: "What experience should your customer have when they walk into the store?",
+        help: "Forget the location for now. Tell us how it should feel.",
+        type: "single",
+        allowOther: true,
+        options: [
+          { v: "gallery",  l: "A boutique gallery", sub: "Curated, quiet, art led" },
+          { v: "flagship", l: "A grand flagship", sub: "Immersive, theatrical, statement piece" },
+          { v: "studio",   l: "A studio with a private appointment area", sub: "Architects and designers come for closed sessions" },
+          { v: "lounge",   l: "A relaxed lounge", sub: "Seating, coffee, ambient music, slow conversations" },
+          { v: "magazine", l: "Like walking into a magazine spread", sub: "Curated set pieces, room after room" },
+          { v: "hotel",    l: "A luxury hotel lobby feel", sub: "Hospitality grade service and attention" }
+        ]
+      },
+      {
+        key: "timeline",
+        label: "What is the launch timeline?",
+        type: "single",
+        allowOther: true,
+        options: [
+          { v: "august",   l: "Store open in August", sub: "About three months out" },
+          { v: "soft",     l: "Soft launch in July, store in August" },
+          { v: "ig-first", l: "Instagram from June, store later in the year" },
+          { v: "flexible", l: "Flexible, want to do it right" }
+        ]
+      }
+    ]
+  },
+
+  {
+    type: "section",
+    title: "Working with us",
+    questions: [
+      {
+        key: "services",
+        label: "What you need from us",
+        help: "Pick everything that applies, there is no limit. We will help you sequence what comes first.",
+        type: "multi",
+        allowOther: true,
+        options: [
+          { v: "strategy",   l: "Overall brand and marketing strategy" },
+          { v: "naming",     l: "Brand naming" },
+          { v: "identity",   l: "Logo and visual identity" },
+          { v: "instagram",  l: "Instagram content strategy and execution" },
+          { v: "shoots",     l: "Photography and video shoots" },
+          { v: "ads",        l: "Paid ads, Meta and Google" },
+          { v: "influencer", l: "Influencer and creator partnerships" },
+          { v: "pr",         l: "PR and press for launch" },
+          { v: "event",      l: "Launch event design and execution" },
+          { v: "website",    l: "Website and online presence" },
+          { v: "instore",    l: "In-store branding, signage and collateral" },
+          { v: "architects", l: "Architect and designer outreach program" }
+        ]
+      },
+      {
+        key: "partnership",
+        label: "The kind of partnership tier that fits your year one plan",
+        help: "Quick context. Premium lifestyle brands in India usually work with a marketing partner for the first 12 to 18 months of launch, that is what builds the recall HNIs walk in for. Standard retainer rates in India sit in the ranges below. Pick what fits where you are. There is a free text option below if you want to suggest your own number.",
+        type: "single",
+        allowOther: true,
+        options: [
+          { v: "boutique",    l: "Focused senior team",      sub: "Boutique studio, monthly retainer around 75K to 1.5L" },
+          { v: "mid",         l: "Mid team with specialists", sub: "Growing studio, monthly retainer around 1.5L to 4L" },
+          { v: "fullservice", l: "Full service team",         sub: "Senior plus specialists, monthly retainer around 4L to 10L" },
+          { v: "project",     l: "Project based, no retainer", sub: "Pay per deliverable, no monthly commitment" },
+          { v: "discuss",     l: "Open to discussion",        sub: "Want to scope it together before locking" }
+        ]
+      }
+    ]
+  },
+
+  { type: "contact" },
+  { type: "closing" }
+];
+
+const state = {
+  step: 0,
+  answers: {},     // key -> value (string for single, array for multi, string for text)
+  others: {},      // key -> free text typed in the Other field
+  user: { name: CONFIG.clientName, phone: "", email: "", ig: "" }
+};
+
+const stageEl = document.getElementById("stage");
+const navrowEl = document.getElementById("navrow");
+const backBtn = document.getElementById("backBtn");
+const nextBtn = document.getElementById("nextBtn");
+const stepCounter = document.getElementById("stepCounter");
+
+function totalSections() { return SCREENS.filter(s => s.type === "section").length; }
+function currentSectionNumber() {
+  let n = 0;
+  for (let i = 0; i <= state.step; i++) {
+    if (SCREENS[i] && SCREENS[i].type === "section") n++;
+  }
+  return n;
+}
+
+function render() {
+  const screen = SCREENS[state.step];
+  if (!screen) return;
+  if (screen.type === "intro")   return renderIntro();
+  if (screen.type === "section") return renderSection(screen);
+  if (screen.type === "contact") return renderContact();
+  if (screen.type === "closing") return renderClosing();
+}
+
+function renderIntro() {
+  stepCounter.textContent = "";
+  navrowEl.style.display = "none";
+  stageEl.innerHTML =
+    '<div class="center">' +
+      '<h1>Hey ' + CONFIG.clientName + '.</h1>' +
+      '<p>A few questions about the lifestyle store you are building. Around five minutes.</p>' +
+      '<button class="cta" id="startBtn" type="button">Start</button>' +
+    '</div>';
+  document.getElementById("startBtn").addEventListener("click", () => {
+    state.step++; render(); window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function renderSection(screen) {
+  stepCounter.textContent = currentSectionNumber() + " of " + totalSections();
+  navrowEl.style.display = "flex";
+
+  let html = '<div class="section-title">' + screen.title + '</div>';
+
+  screen.questions.forEach(q => {
+    html += '<div class="question">';
+    html += '<label class="q-label">' + q.label + '</label>';
+    if (q.help) html += '<div class="q-help">' + q.help + '</div>';
+
+    if (q.type === "text") {
+      const val = escapeHtml(state.answers[q.key] || "");
+      html += '<input class="text-input" type="text" data-key="' + q.key + '" placeholder="' + escapeHtml(q.placeholder || "") + '" value="' + val + '">';
+    } else {
+      html += '<div class="opts" data-key="' + q.key + '" data-type="' + q.type + '">';
+      const selected = state.answers[q.key] || (q.type === "multi" ? [] : "");
+
+      q.options.forEach(opt => {
+        const isSel = q.type === "multi" ? selected.indexOf(opt.v) !== -1 : selected === opt.v;
+        html +=
+          '<div class="opt' + (isSel ? ' selected' : '') + '" data-v="' + opt.v + '">' +
+            '<div class="mark"></div>' +
+            '<div class="text">' + opt.l + (opt.sub ? '<span class="sub">' + opt.sub + '</span>' : '') + '</div>' +
+          '</div>';
+      });
+
+      if (q.allowOther) {
+        const otherSel = q.type === "multi" ? selected.indexOf(OTHER) !== -1 : selected === OTHER;
+        html +=
+          '<div class="opt' + (otherSel ? ' selected' : '') + '" data-v="' + OTHER + '">' +
+            '<div class="mark"></div>' +
+            '<div class="text">Something else</div>' +
+          '</div>';
+        const otherVal = escapeHtml(state.others[q.key] || "");
+        const hidden = otherSel ? "" : " hidden";
+        html += '<input class="other-input' + hidden + '" type="text" data-key="' + q.key + '" placeholder="Type your answer here" value="' + otherVal + '">';
+      }
+
+      html += '</div>';
+    }
+
+    html += '</div>';
+  });
+
+  stageEl.innerHTML = html;
+  bindEvents(screen);
+  updateNav(screen);
+}
+
+function bindEvents(screen) {
+  // text-only questions
+  stageEl.querySelectorAll(".text-input").forEach(inp => {
+    inp.addEventListener("input", (e) => {
+      const key = e.target.dataset.key;
+      state.answers[key] = e.target.value;
+      updateNav(screen);
+    });
+  });
+
+  // MCQ groups
+  stageEl.querySelectorAll(".opts").forEach(optsEl => {
+    const key  = optsEl.dataset.key;
+    const type = optsEl.dataset.type;
+
+    optsEl.querySelectorAll(".opt").forEach(optEl => {
+      optEl.addEventListener("click", () => {
+        const v = optEl.dataset.v;
+        if (type === "single") {
+          state.answers[key] = v;
+          optsEl.querySelectorAll(".opt").forEach(o => o.classList.remove("selected"));
+          optEl.classList.add("selected");
+          toggleOtherInput(optsEl, v === OTHER);
+        } else {
+          const cur = state.answers[key] ? state.answers[key].slice() : [];
+          const i = cur.indexOf(v);
+          if (i >= 0) {
+            cur.splice(i, 1);
+            optEl.classList.remove("selected");
+          } else {
+            cur.push(v);
+            optEl.classList.add("selected");
+          }
+          state.answers[key] = cur;
+          const otherStillOn = cur.indexOf(OTHER) !== -1;
+          toggleOtherInput(optsEl, otherStillOn);
+        }
+        updateNav(screen);
+      });
+    });
+
+    const otherInp = optsEl.querySelector(".other-input");
+    if (otherInp) {
+      otherInp.addEventListener("input", (e) => {
+        state.others[key] = e.target.value;
+        updateNav(screen);
+      });
+    }
+  });
+}
+
+function toggleOtherInput(optsEl, show) {
+  const otherInp = optsEl.querySelector(".other-input");
+  if (!otherInp) return;
+  if (show) otherInp.classList.remove("hidden");
+  else      otherInp.classList.add("hidden");
+}
+
+function isQuestionAnswered(q) {
+  const a = state.answers[q.key];
+  if (q.type === "text") return typeof a === "string" && a.trim().length > 0;
+  if (q.type === "single") return !!a;
+  if (q.type === "multi")  return Array.isArray(a) && a.length > 0;
+  return false;
+}
+
+function updateNav(screen) {
+  const ok = screen.questions.every(isQuestionAnswered);
+  nextBtn.disabled = !ok;
+  nextBtn.textContent = "Continue";
+
+  backBtn.onclick = () => { state.step--; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  nextBtn.onclick = () => {
+    if (!nextBtn.disabled) { state.step++; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  };
+}
+
+function renderContact() {
+  stepCounter.textContent = "Last bit";
+  navrowEl.style.display = "flex";
+
+  stageEl.innerHTML =
+    '<div class="section-title">Your details</div>' +
+    '<div class="field"><label>Name</label><input id="fName"  type="text"  value="' + escapeHtml(state.user.name)  + '"/></div>' +
+    '<div class="field"><label>Phone</label><input id="fPhone" type="tel"   placeholder="+91" value="' + escapeHtml(state.user.phone) + '"/></div>' +
+    '<div class="field"><label>Email</label><input id="fEmail" type="email" placeholder="you@brand.com" value="' + escapeHtml(state.user.email) + '"/></div>' +
+    '<div class="field"><label>Instagram handle, if you have one</label><input id="fIg" type="text" placeholder="@brandhandle" value="' + escapeHtml(state.user.ig) + '"/></div>';
+
+  nextBtn.disabled = false;
+  nextBtn.textContent = "Send";
+  backBtn.onclick = () => { state.step--; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  nextBtn.onclick = submit;
+}
+
+function renderClosing() {
+  stepCounter.textContent = "";
+  navrowEl.style.display = "none";
+  stageEl.innerHTML =
+    '<div class="center">' +
+      '<h1>Thanks ' + escapeHtml(state.user.name || CONFIG.clientName) + '.</h1>' +
+      '<p>We will get back to you within 48 hours with first thoughts on what we have read.</p>' +
+    '</div>';
+}
+
+function submit() {
+  const name  = document.getElementById("fName").value.trim()  || CONFIG.clientName;
+  const phone = document.getElementById("fPhone").value.trim();
+  const email = document.getElementById("fEmail").value.trim();
+  const ig    = document.getElementById("fIg").value.trim();
+
+  if (!email) {
+    document.getElementById("fEmail").focus();
+    nextBtn.textContent = "Email needed";
+    setTimeout(() => { nextBtn.textContent = "Send"; }, 1500);
+    return;
+  }
+
+  state.user = { name: name, phone: phone, email: email, ig: ig };
+
+  // build payload
+  const questionLabels = {};
+  const questionSections = {};
+  const questionOrder = [];
+  const optionLabels = {};
+
+  SCREENS.forEach(s => {
+    if (s.type !== "section") return;
+    s.questions.forEach(q => {
+      questionLabels[q.key]   = q.label;
+      questionSections[q.key] = s.title;
+      questionOrder.push(q.key);
+      if (q.options) {
+        optionLabels[q.key] = {};
+        q.options.forEach(o => { optionLabels[q.key][o.v] = o.l; });
+        optionLabels[q.key][OTHER] = "Something else";
+      }
+    });
+  });
+
+  // resolve __other__ to the typed text
+  function resolveCode(key, code) {
+    if (code === OTHER) {
+      const t = (state.others[key] || "").trim();
+      return t.length ? t : "Something else";
+    }
+    return (optionLabels[key] && optionLabels[key][code]) || code;
+  }
+
+  const answersText = {};
+  Object.keys(state.answers).forEach(k => {
+    const v = state.answers[k];
+    if (Array.isArray(v)) {
+      answersText[k] = v.map(x => resolveCode(k, x)).join(", ");
+    } else if (typeof v === "string") {
+      // text questions vs single-select codes
+      if (optionLabels[k]) {
+        answersText[k] = resolveCode(k, v);
+      } else {
+        answersText[k] = v;
+      }
+    }
+  });
+
+  const payload = {
+    formType: "brief",
+    clientName: CONFIG.clientName,
+    submittedAt: new Date().toISOString(),
+    user: state.user,
+    answers: answersText,
+    answersRaw: state.answers,
+    answersOther: state.others,
+    questionLabels: questionLabels,
+    questionSections: questionSections,
+    questionOrder: questionOrder
+  };
+
+  nextBtn.disabled = true;
+  nextBtn.textContent = "Sending";
+
+  fetch(CONFIG.appsScriptUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  })
+  .then(() => { state.step++; render(); window.scrollTo({ top: 0, behavior: "smooth" }); })
+  .catch(() => { nextBtn.textContent = "Try again"; nextBtn.disabled = false; });
+}
+
+render();
+</script>
+</body>
+</html>
