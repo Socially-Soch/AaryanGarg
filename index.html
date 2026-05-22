@@ -40,23 +40,38 @@ body{
 
 .topbar{
   display:flex;justify-content:space-between;align-items:center;
-  padding:8px 0 32px;
+  padding:8px 0 10px;
 }
 .wordmark{font-weight:600;font-size:14px;letter-spacing:0.04em;color:var(--text)}
-.step{font-size:12px;letter-spacing:0.06em;color:var(--text-mute)}
+.progress-text{font-size:12px;letter-spacing:0.06em;color:var(--text-mute)}
 
-.stage{flex:1;display:flex;flex-direction:column}
-
-.section-title{
-  font-size:22px;font-weight:600;margin-bottom:28px;color:var(--text);
+.progress-bar{
+  position:relative;height:3px;
+  background:rgba(187,148,87,0.18);
+  border-radius:2px;overflow:hidden;
+  margin-bottom:28px;
+}
+.progress-bar .fill{
+  position:absolute;top:0;left:0;bottom:0;
+  background:var(--tan);
+  width:0%;
+  transition:width 0.4s ease;
 }
 
-.question{margin-bottom:28px}
+.stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0}
+
+.greeting{
+  font-size:14px;color:var(--text-soft);
+  margin-bottom:18px;
+}
+
 .q-label{
-  display:block;font-size:15px;font-weight:500;margin-bottom:6px;color:var(--text);
+  display:block;font-size:22px;font-weight:600;
+  margin-bottom:10px;color:var(--text);line-height:1.35;
 }
 .q-help{
-  font-size:13px;color:var(--text-soft);margin-bottom:12px;line-height:1.55;
+  font-size:14px;color:var(--text-soft);
+  margin-bottom:24px;line-height:1.55;
 }
 
 .opts{display:flex;flex-direction:column;gap:8px}
@@ -89,6 +104,7 @@ body{
 }
 
 .text-input,
+.text-area,
 .other-input{
   width:100%;
   background:var(--bg-card);
@@ -97,11 +113,20 @@ body{
   padding:12px 14px;
   color:var(--text);
   font-family:inherit;font-size:14px;
-  margin-top:8px;
+}
+.text-input,
+.text-area{margin-top:0}
+.other-input{margin-top:8px}
+.text-area{
+  min-height:140px;
+  resize:vertical;
+  line-height:1.55;
 }
 .text-input:focus,
+.text-area:focus,
 .other-input:focus{outline:none;border-color:var(--tan)}
 .text-input::placeholder,
+.text-area::placeholder,
 .other-input::placeholder{color:var(--text-mute)}
 .other-input.hidden{display:none}
 
@@ -114,6 +139,7 @@ body{
   font-family:inherit;font-size:14px;cursor:pointer;padding:6px 0;
 }
 .back:hover{color:var(--text)}
+.back:disabled{color:var(--text-mute);opacity:0.4;cursor:not-allowed}
 .next{
   background:var(--burgundy);color:var(--text);
   border:none;border-radius:6px;padding:10px 24px;
@@ -130,13 +156,6 @@ body{
 }
 .center h1{font-size:26px;font-weight:600;margin-bottom:10px}
 .center p{color:var(--text-soft);margin-bottom:20px}
-.center .cta{
-  align-self:flex-start;
-  background:var(--burgundy);color:var(--text);
-  border:none;border-radius:6px;padding:12px 28px;
-  font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;
-}
-.center .cta:hover{background:var(--burgundy-2)}
 
 .field{margin-bottom:16px}
 .field label{display:block;font-size:13px;color:var(--text-soft);margin-bottom:6px}
@@ -152,7 +171,7 @@ body{
 .field input:focus{outline:none;border-color:var(--tan)}
 
 @media (max-width:560px){
-  .section-title{font-size:20px}
+  .q-label{font-size:20px}
   .center h1{font-size:22px}
 }
 </style>
@@ -162,7 +181,10 @@ body{
 
   <div class="topbar">
     <div class="wordmark">Socially Soch</div>
-    <div class="step" id="stepCounter"></div>
+    <div class="progress-text" id="progressText"></div>
+  </div>
+  <div class="progress-bar" id="progressBar">
+    <div class="fill" id="progressFill" style="width:0%"></div>
   </div>
 
   <div class="stage" id="stage"></div>
@@ -177,191 +199,128 @@ body{
 <script>
 const CONFIG = {
   clientName: "Aaryan",
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbwb_WYZBcoSiAbDv2FHqFBawye-vfxBEkqN_eyX6buJltNxJbB3h6Ga366zq5RhFusi/exec"
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbz2Hdiw6UIsTOvcwNov5lOqa8V0M3eHKZs1LD9d4ryj2pcsoBry2V6v2qPWlsWPTJ9c5Q/exec"
 };
 
 const OTHER = "__other__";
 
-const SCREENS = [
-  { type: "intro" },
-
+const QUESTIONS = [
   {
-    type: "section",
-    title: "The business",
-    questions: [
-      {
-        key: "model",
-        label: "What kind of business are you setting up?",
-        help: "There is no single right answer here, this is the first thing we will help you figure out.",
-        type: "single",
-        allowOther: true,
-        options: [
-          { v: "multibrand",  l: "Multi-brand retail showroom", sub: "Curate other brands under one roof, like Address Home or Pure Concept Home" },
-          { v: "distributor", l: "Distributor for international brands", sub: "Sell B2B to architects and other retailers, like Sources Unlimited" },
-          { v: "ownbrand",    l: "Your own brand store", sub: "Your products under your own brand, in your own space" },
-          { v: "hybrid",      l: "Own brand plus distribute select brands", sub: "Private label and curated mix, the Address Home model" },
-          { v: "figuring",    l: "Still figuring this out", sub: "Want to discuss before locking it in" }
-        ]
-      },
-      {
-        key: "stage",
-        label: "Where are you in the journey right now?",
-        type: "single",
-        allowOther: true,
-        options: [
-          { v: "exploring", l: "Just exploring, no commitments yet" },
-          { v: "concept",   l: "Concept locked, planning the launch" },
-          { v: "deals",     l: "Talking to brands or suppliers, deals in motion" },
-          { v: "tieups",    l: "Brand or supply tie ups locked, planning the store" },
-          { v: "space",     l: "Store space identified, ready to fit out" }
-        ]
-      },
-      {
-        key: "categories",
-        label: "Which categories will the store carry?",
-        help: "Pick everything you are seriously considering. We will help you sequence them in the launch.",
-        type: "multi",
-        allowOther: true,
-        options: [
-          { v: "bath",      l: "Bath fittings", sub: "Faucets, showers, sanitaryware" },
-          { v: "wardrobes", l: "Wardrobes and storage" },
-          { v: "kitchen",   l: "Kitchen and appliances" },
-          { v: "furniture", l: "Furniture", sub: "Living, dining, bedroom" },
-          { v: "lighting",  l: "Lighting" },
-          { v: "decor",     l: "Home decor and accessories" },
-          { v: "hardware",  l: "Hardware and finishes", sub: "Handles, knobs, surface finishes" },
-          { v: "all",       l: "All of the above, a full lifestyle destination" }
-        ]
-      }
+    key: "model",
+    label: "What kind of business are you setting up?",
+    help: "No single right answer here. This is the first thing we will help you figure out.",
+    type: "single",
+    allowOther: true,
+    options: [
+      { v: "multibrand",  l: "Multi-brand retail showroom", sub: "Curate other brands under one roof, like Address Home or Pure Concept Home" },
+      { v: "distributor", l: "Distributor for international brands", sub: "Sell B2B to architects and other retailers, like Sources Unlimited" },
+      { v: "ownbrand",    l: "Your own brand store", sub: "Your products under your own brand, in your own space" },
+      { v: "hybrid",      l: "Own brand plus distribute select brands", sub: "Private label plus curated mix, the Address Home model" },
+      { v: "figuring",    l: "Still figuring this out" }
     ]
   },
-
   {
-    type: "section",
-    title: "Customer and inspiration",
-    questions: [
-      {
-        key: "customer",
-        label: "Who is the main customer?",
-        type: "single",
-        allowOther: true,
-        options: [
-          { v: "architects",  l: "Architects and interior designers", sub: "They specify your products for HNI projects" },
-          { v: "homeowners",  l: "HNI homeowners directly", sub: "Walk ins and referrals" },
-          { v: "builders",    l: "Builders and developers", sub: "Luxury residential and hotel projects" },
-          { v: "hospitality", l: "Boutique hotels and hospitality" },
-          { v: "mix",         l: "A mix of all the above" }
-        ]
-      },
-      {
-        key: "reference",
-        label: "Name a brand you admire or want to position yours like",
-        help: "Could be Indian or international. Could be a direct competitor or a brand you respect. Take a moment to think, or quickly search a few names before you type. Some examples to spark thought: Address Home, Pure Concept Home, Beyond Designs, FormeStore, Sources Unlimited, Restoration Hardware, The Conran Shop, B&B Italia, Roche Bobois. Or something else entirely.",
-        type: "text",
-        placeholder: "Type one or two brand names"
-      },
-      {
-        key: "design",
-        label: "What design language do you lean towards?",
-        type: "single",
-        allowOther: true,
-        options: [
-          { v: "minimal",  l: "Modern minimal", sub: "Clean lines, neutral palette, metal finishes" },
-          { v: "european", l: "Classic European luxury", sub: "Brass, marble, ornate detailing" },
-          { v: "italian",  l: "Italian contemporary", sub: "Sculptural, sleek, refined" },
-          { v: "indian",   l: "Indian craft plus modern", sub: "Local materials and forms with a contemporary feel" },
-          { v: "japanese", l: "Japanese wellness", sub: "Restraint, water, ritual, wabi sabi" },
-          { v: "eclectic", l: "Eclectic mix", sub: "Curated tension across styles" },
-          { v: "tech",     l: "Tech forward", sub: "Smart home, sensor based, futuristic" }
-        ]
-      }
+    key: "stage",
+    label: "Where are you in the journey right now?",
+    type: "single",
+    allowOther: true,
+    options: [
+      { v: "exploring", l: "Just exploring, no commitments yet" },
+      { v: "concept",   l: "Concept locked, planning the launch" },
+      { v: "deals",     l: "Talking to brands or suppliers, deals in motion" },
+      { v: "tieups",    l: "Brand or supply tie ups locked, planning the store" },
+      { v: "space",     l: "Store space identified, ready to fit out" }
     ]
   },
-
   {
-    type: "section",
-    title: "The store and launch",
-    questions: [
-      {
-        key: "storeExperience",
-        label: "What experience should your customer have when they walk into the store?",
-        help: "Forget the location for now. Tell us how it should feel.",
-        type: "single",
-        allowOther: true,
-        options: [
-          { v: "gallery",  l: "A boutique gallery", sub: "Curated, quiet, art led" },
-          { v: "flagship", l: "A grand flagship", sub: "Immersive, theatrical, statement piece" },
-          { v: "studio",   l: "A studio with a private appointment area", sub: "Architects and designers come for closed sessions" },
-          { v: "lounge",   l: "A relaxed lounge", sub: "Seating, coffee, ambient music, slow conversations" },
-          { v: "magazine", l: "Like walking into a magazine spread", sub: "Curated set pieces, room after room" },
-          { v: "hotel",    l: "A luxury hotel lobby feel", sub: "Hospitality grade service and attention" }
-        ]
-      },
-      {
-        key: "timeline",
-        label: "What is the launch timeline?",
-        type: "single",
-        allowOther: true,
-        options: [
-          { v: "august",   l: "Store open in August", sub: "About three months out" },
-          { v: "soft",     l: "Soft launch in July, store in August" },
-          { v: "ig-first", l: "Instagram from June, store later in the year" },
-          { v: "flexible", l: "Flexible, want to do it right" }
-        ]
-      }
+    key: "categories",
+    label: "Which categories will the store carry?",
+    help: "Pick everything you are seriously considering.",
+    type: "multi",
+    allowOther: true,
+    options: [
+      { v: "bath",      l: "Bath fittings", sub: "Faucets, showers, sanitaryware" },
+      { v: "wardrobes", l: "Wardrobes and storage" },
+      { v: "kitchen",   l: "Kitchen and appliances" },
+      { v: "furniture", l: "Furniture", sub: "Living, dining, bedroom" },
+      { v: "lighting",  l: "Lighting" },
+      { v: "decor",     l: "Home decor and accessories" },
+      { v: "hardware",  l: "Hardware and finishes", sub: "Handles, knobs, surface finishes" },
+      { v: "all",       l: "All of the above, a full lifestyle destination" }
     ]
   },
-
   {
-    type: "section",
-    title: "Working with us",
-    questions: [
-      {
-        key: "services",
-        label: "What you need from us",
-        help: "Pick everything that applies, there is no limit. We will help you sequence what comes first.",
-        type: "multi",
-        allowOther: true,
-        options: [
-          { v: "strategy",   l: "Overall brand and marketing strategy" },
-          { v: "naming",     l: "Brand naming" },
-          { v: "identity",   l: "Logo and visual identity" },
-          { v: "instagram",  l: "Instagram content strategy and execution" },
-          { v: "shoots",     l: "Photography and video shoots" },
-          { v: "ads",        l: "Paid ads, Meta and Google" },
-          { v: "influencer", l: "Influencer and creator partnerships" },
-          { v: "pr",         l: "PR and press for launch" },
-          { v: "event",      l: "Launch event design and execution" },
-          { v: "website",    l: "Website and online presence" },
-          { v: "instore",    l: "In-store branding, signage and collateral" },
-          { v: "architects", l: "Architect and designer outreach program" }
-        ]
-      },
-      {
-        key: "partnership",
-        label: "The kind of partnership tier that fits your year one plan",
-        help: "Quick context. Premium lifestyle brands in India usually work with a marketing partner for the first 12 to 18 months of launch, that is what builds the recall HNIs walk in for. Standard retainer rates in India sit in the ranges below. Pick what fits where you are. There is a free text option below if you want to suggest your own number.",
-        type: "single",
-        allowOther: true,
-        options: [
-          { v: "boutique",    l: "Focused senior team",      sub: "Boutique studio, monthly retainer around 75K to 1.5L" },
-          { v: "mid",         l: "Mid team with specialists", sub: "Growing studio, monthly retainer around 1.5L to 4L" },
-          { v: "fullservice", l: "Full service team",         sub: "Senior plus specialists, monthly retainer around 4L to 10L" },
-          { v: "project",     l: "Project based, no retainer", sub: "Pay per deliverable, no monthly commitment" },
-          { v: "discuss",     l: "Open to discussion",        sub: "Want to scope it together before locking" }
-        ]
-      }
+    key: "customer",
+    label: "Who is the main customer?",
+    type: "single",
+    allowOther: true,
+    options: [
+      { v: "architects",  l: "Architects and interior designers", sub: "They specify your products for HNI projects" },
+      { v: "homeowners",  l: "HNI homeowners directly", sub: "Walk ins and referrals" },
+      { v: "builders",    l: "Builders and developers", sub: "Luxury residential and hotel projects" },
+      { v: "hospitality", l: "Boutique hotels and hospitality" },
+      { v: "mix",         l: "A mix of all the above" }
     ]
   },
-
-  { type: "contact" },
-  { type: "closing" }
+  {
+    key: "reference",
+    label: "Name a brand you admire or want to position yours like",
+    help: "Could be Indian or international. Could be a direct competitor or a brand you respect. Take a moment to think, or quickly search a few names. Examples to spark thought: Address Home, Pure Concept Home, Beyond Designs, FormeStore, Sources Unlimited, Restoration Hardware, The Conran Shop, B&B Italia, Roche Bobois. Or something else entirely.",
+    type: "text",
+    placeholder: "Type one or two brand names"
+  },
+  {
+    key: "design",
+    label: "What design language do you lean towards?",
+    type: "single",
+    allowOther: true,
+    options: [
+      { v: "minimal",  l: "Modern minimal", sub: "Clean lines, neutral palette, metal finishes" },
+      { v: "european", l: "Classic European luxury", sub: "Brass, marble, ornate detailing" },
+      { v: "italian",  l: "Italian contemporary", sub: "Sculptural, sleek, refined" },
+      { v: "indian",   l: "Indian craft plus modern", sub: "Local materials and forms with a contemporary feel" },
+      { v: "japanese", l: "Japanese wellness", sub: "Restraint, water, ritual, wabi sabi" },
+      { v: "eclectic", l: "Eclectic mix", sub: "Curated tension across styles" },
+      { v: "tech",     l: "Tech forward", sub: "Smart home, sensor based, futuristic" }
+    ]
+  },
+  {
+    key: "storeExperience",
+    label: "What experience should your customer have when they walk into the store?",
+    help: "Forget the location for now. Tell us how it should feel.",
+    type: "single",
+    allowOther: true,
+    options: [
+      { v: "gallery",  l: "A boutique gallery", sub: "Curated, quiet, art led" },
+      { v: "flagship", l: "A grand flagship", sub: "Immersive, theatrical, statement piece" },
+      { v: "studio",   l: "A studio with a private appointment area", sub: "Architects and designers come for closed sessions" },
+      { v: "lounge",   l: "A relaxed lounge", sub: "Seating, coffee, ambient music, slow conversations" },
+      { v: "magazine", l: "Like walking into a magazine spread", sub: "Curated set pieces, room after room" },
+      { v: "hotel",    l: "A luxury hotel lobby feel", sub: "Hospitality grade service and attention" }
+    ]
+  },
+  {
+    key: "services",
+    label: "What do you need from us?",
+    help: "We work as one senior team that handles the whole brand: identity, content, shoots, ads, partnerships, PR, launch event, store branding, website. Tell us in your own words what you need from this team, or what kind of people you imagine sitting on it.",
+    type: "textarea",
+    placeholder: "Write here. As much detail as you want."
+  },
+  {
+    key: "spend",
+    label: "What monthly figure do you have in mind?",
+    help: "For branding and marketing. Type any number, any range, in any words. We will design the engagement around what you share.",
+    type: "text",
+    placeholder: "Type whatever feels right"
+  }
 ];
+
+const TOTAL_Q = QUESTIONS.length;
 
 const state = {
   step: 0,
-  answers: {},     // key -> value (string for single, array for multi, string for text)
-  others: {},      // key -> free text typed in the Other field
+  answers: {},     // key -> value (string, array, or text)
+  others: {},      // key -> free text from Other field
   user: { name: CONFIG.clientName, phone: "", email: "", ig: "" }
 };
 
@@ -369,119 +328,120 @@ const stageEl = document.getElementById("stage");
 const navrowEl = document.getElementById("navrow");
 const backBtn = document.getElementById("backBtn");
 const nextBtn = document.getElementById("nextBtn");
-const stepCounter = document.getElementById("stepCounter");
-
-function totalSections() { return SCREENS.filter(s => s.type === "section").length; }
-function currentSectionNumber() {
-  let n = 0;
-  for (let i = 0; i <= state.step; i++) {
-    if (SCREENS[i] && SCREENS[i].type === "section") n++;
-  }
-  return n;
-}
-
-function render() {
-  const screen = SCREENS[state.step];
-  if (!screen) return;
-  if (screen.type === "intro")   return renderIntro();
-  if (screen.type === "section") return renderSection(screen);
-  if (screen.type === "contact") return renderContact();
-  if (screen.type === "closing") return renderClosing();
-}
-
-function renderIntro() {
-  stepCounter.textContent = "";
-  navrowEl.style.display = "none";
-  stageEl.innerHTML =
-    '<div class="center">' +
-      '<h1>Hey ' + CONFIG.clientName + '.</h1>' +
-      '<p>A few questions about the lifestyle store you are building. Around five minutes.</p>' +
-      '<button class="cta" id="startBtn" type="button">Start</button>' +
-    '</div>';
-  document.getElementById("startBtn").addEventListener("click", () => {
-    state.step++; render(); window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-}
+const progressText = document.getElementById("progressText");
+const progressFill = document.getElementById("progressFill");
+const progressBar = document.getElementById("progressBar");
 
 function escapeHtml(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-function renderSection(screen) {
-  stepCounter.textContent = currentSectionNumber() + " of " + totalSections();
+function updateProgress() {
+  if (state.step < TOTAL_Q) {
+    const idx = state.step;
+    const pct = (idx / TOTAL_Q) * 100;
+    progressFill.style.width = pct + "%";
+    progressText.textContent = (idx + 1) + " of " + TOTAL_Q;
+    progressBar.style.display = "block";
+  } else if (state.step === TOTAL_Q) {
+    progressFill.style.width = "100%";
+    progressText.textContent = "Last bit";
+    progressBar.style.display = "block";
+  } else {
+    progressBar.style.display = "none";
+    progressText.textContent = "";
+  }
+}
+
+function render() {
+  if (state.step < TOTAL_Q) return renderQuestion(state.step);
+  if (state.step === TOTAL_Q) return renderContact();
+  return renderClosing();
+}
+
+function renderQuestion(idx) {
+  const q = QUESTIONS[idx];
   navrowEl.style.display = "flex";
+  updateProgress();
 
-  let html = '<div class="section-title">' + screen.title + '</div>';
+  let html = "";
 
-  screen.questions.forEach(q => {
-    html += '<div class="question">';
-    html += '<label class="q-label">' + q.label + '</label>';
-    if (q.help) html += '<div class="q-help">' + q.help + '</div>';
+  if (idx === 0) {
+    html += '<div class="greeting">Hey ' + escapeHtml(CONFIG.clientName) + '.</div>';
+  }
 
-    if (q.type === "text") {
-      const val = escapeHtml(state.answers[q.key] || "");
-      html += '<input class="text-input" type="text" data-key="' + q.key + '" placeholder="' + escapeHtml(q.placeholder || "") + '" value="' + val + '">';
-    } else {
-      html += '<div class="opts" data-key="' + q.key + '" data-type="' + q.type + '">';
-      const selected = state.answers[q.key] || (q.type === "multi" ? [] : "");
+  html += '<label class="q-label">' + q.label + '</label>';
+  if (q.help) html += '<div class="q-help">' + q.help + '</div>';
 
-      q.options.forEach(opt => {
-        const isSel = q.type === "multi" ? selected.indexOf(opt.v) !== -1 : selected === opt.v;
-        html +=
-          '<div class="opt' + (isSel ? ' selected' : '') + '" data-v="' + opt.v + '">' +
-            '<div class="mark"></div>' +
-            '<div class="text">' + opt.l + (opt.sub ? '<span class="sub">' + opt.sub + '</span>' : '') + '</div>' +
-          '</div>';
-      });
+  if (q.type === "text") {
+    const val = escapeHtml(state.answers[q.key] || "");
+    html += '<input class="text-input" type="text" data-key="' + q.key + '" placeholder="' + escapeHtml(q.placeholder || "") + '" value="' + val + '">';
+  } else if (q.type === "textarea") {
+    const val = escapeHtml(state.answers[q.key] || "");
+    html += '<textarea class="text-area" data-key="' + q.key + '" placeholder="' + escapeHtml(q.placeholder || "") + '">' + val + '</textarea>';
+  } else {
+    html += '<div class="opts" data-key="' + q.key + '" data-type="' + q.type + '">';
+    const selected = state.answers[q.key] || (q.type === "multi" ? [] : "");
 
-      if (q.allowOther) {
-        const otherSel = q.type === "multi" ? selected.indexOf(OTHER) !== -1 : selected === OTHER;
-        html +=
-          '<div class="opt' + (otherSel ? ' selected' : '') + '" data-v="' + OTHER + '">' +
-            '<div class="mark"></div>' +
-            '<div class="text">Something else</div>' +
-          '</div>';
-        const otherVal = escapeHtml(state.others[q.key] || "");
-        const hidden = otherSel ? "" : " hidden";
-        html += '<input class="other-input' + hidden + '" type="text" data-key="' + q.key + '" placeholder="Type your answer here" value="' + otherVal + '">';
-      }
+    q.options.forEach(opt => {
+      const isSel = q.type === "multi" ? selected.indexOf(opt.v) !== -1 : selected === opt.v;
+      html +=
+        '<div class="opt' + (isSel ? ' selected' : '') + '" data-v="' + opt.v + '">' +
+          '<div class="mark"></div>' +
+          '<div class="text">' + opt.l + (opt.sub ? '<span class="sub">' + opt.sub + '</span>' : '') + '</div>' +
+        '</div>';
+    });
 
-      html += '</div>';
+    if (q.allowOther) {
+      const otherSel = q.type === "multi" ? selected.indexOf(OTHER) !== -1 : selected === OTHER;
+      html +=
+        '<div class="opt' + (otherSel ? ' selected' : '') + '" data-v="' + OTHER + '">' +
+          '<div class="mark"></div>' +
+          '<div class="text">Something else</div>' +
+        '</div>';
+      const otherVal = escapeHtml(state.others[q.key] || "");
+      const hidden = otherSel ? "" : " hidden";
+      html += '<input class="other-input' + hidden + '" type="text" data-key="' + q.key + '" placeholder="Type your answer here" value="' + otherVal + '">';
     }
 
     html += '</div>';
-  });
+  }
 
   stageEl.innerHTML = html;
-  bindEvents(screen);
-  updateNav(screen);
+  bindQuestion(q);
+  updateNav(q, idx);
 }
 
-function bindEvents(screen) {
-  // text-only questions
-  stageEl.querySelectorAll(".text-input").forEach(inp => {
-    inp.addEventListener("input", (e) => {
-      const key = e.target.dataset.key;
-      state.answers[key] = e.target.value;
-      updateNav(screen);
+function bindQuestion(q) {
+  // Text input
+  const textInp = stageEl.querySelector(".text-input");
+  if (textInp) {
+    textInp.addEventListener("input", (e) => {
+      state.answers[q.key] = e.target.value;
+      updateNav(q, state.step);
     });
-  });
-
-  // MCQ groups
-  stageEl.querySelectorAll(".opts").forEach(optsEl => {
-    const key  = optsEl.dataset.key;
-    const type = optsEl.dataset.type;
-
+  }
+  // Textarea
+  const textArea = stageEl.querySelector(".text-area");
+  if (textArea) {
+    textArea.addEventListener("input", (e) => {
+      state.answers[q.key] = e.target.value;
+      updateNav(q, state.step);
+    });
+  }
+  // MCQ
+  const optsEl = stageEl.querySelector(".opts");
+  if (optsEl) {
     optsEl.querySelectorAll(".opt").forEach(optEl => {
       optEl.addEventListener("click", () => {
         const v = optEl.dataset.v;
-        if (type === "single") {
-          state.answers[key] = v;
+        if (q.type === "single") {
+          state.answers[q.key] = v;
           optsEl.querySelectorAll(".opt").forEach(o => o.classList.remove("selected"));
           optEl.classList.add("selected");
-          toggleOtherInput(optsEl, v === OTHER);
+          toggleOther(optsEl, v === OTHER);
         } else {
-          const cur = state.answers[key] ? state.answers[key].slice() : [];
+          const cur = state.answers[q.key] ? state.answers[q.key].slice() : [];
           const i = cur.indexOf(v);
           if (i >= 0) {
             cur.splice(i, 1);
@@ -490,56 +450,60 @@ function bindEvents(screen) {
             cur.push(v);
             optEl.classList.add("selected");
           }
-          state.answers[key] = cur;
-          const otherStillOn = cur.indexOf(OTHER) !== -1;
-          toggleOtherInput(optsEl, otherStillOn);
+          state.answers[q.key] = cur;
+          toggleOther(optsEl, cur.indexOf(OTHER) !== -1);
         }
-        updateNav(screen);
+        updateNav(q, state.step);
       });
     });
-
     const otherInp = optsEl.querySelector(".other-input");
     if (otherInp) {
       otherInp.addEventListener("input", (e) => {
-        state.others[key] = e.target.value;
-        updateNav(screen);
+        state.others[q.key] = e.target.value;
+        updateNav(q, state.step);
       });
     }
-  });
+  }
 }
 
-function toggleOtherInput(optsEl, show) {
+function toggleOther(optsEl, show) {
   const otherInp = optsEl.querySelector(".other-input");
   if (!otherInp) return;
   if (show) otherInp.classList.remove("hidden");
   else      otherInp.classList.add("hidden");
 }
 
-function isQuestionAnswered(q) {
+function isAnswered(q) {
   const a = state.answers[q.key];
-  if (q.type === "text") return typeof a === "string" && a.trim().length > 0;
+  if (q.type === "text" || q.type === "textarea") return typeof a === "string" && a.trim().length > 0;
   if (q.type === "single") return !!a;
   if (q.type === "multi")  return Array.isArray(a) && a.length > 0;
   return false;
 }
 
-function updateNav(screen) {
-  const ok = screen.questions.every(isQuestionAnswered);
+function updateNav(q, idx) {
+  const ok = isAnswered(q);
   nextBtn.disabled = !ok;
   nextBtn.textContent = "Continue";
+  backBtn.disabled = idx === 0;
 
-  backBtn.onclick = () => { state.step--; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  backBtn.onclick = () => {
+    if (idx === 0) return;
+    state.step--; render(); window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   nextBtn.onclick = () => {
-    if (!nextBtn.disabled) { state.step++; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    if (nextBtn.disabled) return;
+    state.step++; render(); window.scrollTo({ top: 0, behavior: "smooth" });
   };
 }
 
 function renderContact() {
-  stepCounter.textContent = "Last bit";
   navrowEl.style.display = "flex";
+  updateProgress();
 
   stageEl.innerHTML =
-    '<div class="section-title">Your details</div>' +
+    '<label class="q-label">Your details</label>' +
+    '<div class="q-help">Last step. We will use this to send your brief response within 48 hours.</div>' +
     '<div class="field"><label>Name</label><input id="fName"  type="text"  value="' + escapeHtml(state.user.name)  + '"/></div>' +
     '<div class="field"><label>Phone</label><input id="fPhone" type="tel"   placeholder="+91" value="' + escapeHtml(state.user.phone) + '"/></div>' +
     '<div class="field"><label>Email</label><input id="fEmail" type="email" placeholder="you@brand.com" value="' + escapeHtml(state.user.email) + '"/></div>' +
@@ -547,13 +511,14 @@ function renderContact() {
 
   nextBtn.disabled = false;
   nextBtn.textContent = "Send";
+  backBtn.disabled = false;
   backBtn.onclick = () => { state.step--; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
   nextBtn.onclick = submit;
 }
 
 function renderClosing() {
-  stepCounter.textContent = "";
   navrowEl.style.display = "none";
+  updateProgress();
   stageEl.innerHTML =
     '<div class="center">' +
       '<h1>Thanks ' + escapeHtml(state.user.name || CONFIG.clientName) + '.</h1>' +
@@ -576,27 +541,22 @@ function submit() {
 
   state.user = { name: name, phone: phone, email: email, ig: ig };
 
-  // build payload
   const questionLabels = {};
   const questionSections = {};
   const questionOrder = [];
   const optionLabels = {};
 
-  SCREENS.forEach(s => {
-    if (s.type !== "section") return;
-    s.questions.forEach(q => {
-      questionLabels[q.key]   = q.label;
-      questionSections[q.key] = s.title;
-      questionOrder.push(q.key);
-      if (q.options) {
-        optionLabels[q.key] = {};
-        q.options.forEach(o => { optionLabels[q.key][o.v] = o.l; });
-        optionLabels[q.key][OTHER] = "Something else";
-      }
-    });
+  QUESTIONS.forEach((q) => {
+    questionLabels[q.key]   = q.label;
+    questionSections[q.key] = "Brief";
+    questionOrder.push(q.key);
+    if (q.options) {
+      optionLabels[q.key] = {};
+      q.options.forEach(o => { optionLabels[q.key][o.v] = o.l; });
+      optionLabels[q.key][OTHER] = "Something else";
+    }
   });
 
-  // resolve __other__ to the typed text
   function resolveCode(key, code) {
     if (code === OTHER) {
       const t = (state.others[key] || "").trim();
@@ -611,7 +571,6 @@ function submit() {
     if (Array.isArray(v)) {
       answersText[k] = v.map(x => resolveCode(k, x)).join(", ");
     } else if (typeof v === "string") {
-      // text questions vs single-select codes
       if (optionLabels[k]) {
         answersText[k] = resolveCode(k, v);
       } else {
